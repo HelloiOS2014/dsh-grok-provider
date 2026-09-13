@@ -968,7 +968,9 @@ async function renderSettingsPage({
     isLoopback: true,
     rpc: {
       async call(route, endpoint, payload) {
-        assert.equal(route, "/grok-auth")
+        assert.equal(route, "/api")
+        assert.ok(endpoint.startsWith("grok-auth/"))
+        endpoint = endpoint.slice("grok-auth/".length)
         rpcCalls.push({ endpoint, payload })
         if (endpoint === "status") return { ok: true, value: { kind: "status", status } }
         if (endpoint === "diagnostics") {
@@ -1118,7 +1120,9 @@ async function createSettingsLifecycleHarness({ rpc, searchHarness = createSearc
     isLoopback: true,
     rpc: {
       async call(route, endpoint, payload) {
-        assert.equal(route, "/grok-auth")
+        assert.equal(route, "/api")
+        assert.ok(endpoint.startsWith("grok-auth/"))
+        endpoint = endpoint.slice("grok-auth/".length)
         const value = await rpc(endpoint, payload)
         return { ok: true, value }
       },

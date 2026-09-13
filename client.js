@@ -243,7 +243,7 @@ window.__ModuleLoader__.load({
         }
       }, [searchSettings])
       const call = React.useCallback(async (endpoint, payload = {}) => {
-        const result = await connection.rpc.call("/grok-auth", endpoint, payload)
+        const result = await connection.rpc.call("/api", `grok-auth/${endpoint}`, payload)
         if (!result || result.ok !== true) throw new Error("Grok account RPC failed")
         return result.value
       }, [connection])
