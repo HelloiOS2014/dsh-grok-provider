@@ -147,6 +147,7 @@ dsh web
 
 ### `1.0.5` 修复边界
 
+- [1.0.5 发布](https://github.com/yoshino-xiao7/dsh-grok-provider/releases/tag/v1.0.5) 与 npm `latest` 已更新；双平台 CI、唯一制品字节、Registry 签名和 provenance 均已验证。
 - 六个账户操作迁移到共享 `/api` 精确 POST 路由；主机保留浏览器会话认证、Host/Origin 检查和请求体限制。
 - 使用主机请求 schema，拒绝错误方法、畸形请求和路径不匹配；随插件卸载清理路由。
 - 依赖对齐 DSH `0.1.5-rc.2`。macOS 隔离实例验证状态、CLI `1.0.5`、两个模型和额度；未认证返回 401，跨来源返回 403。
