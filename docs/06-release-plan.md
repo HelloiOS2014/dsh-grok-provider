@@ -2,6 +2,8 @@
 
 ## 1.0.5 / DSH 0.1.5-rc.2
 
+发布完成：npm `latest=1.0.5`；最终提交 `49f08ba62bd9eb77fbf122413e08f28fc56d7207`，双平台 CI `34734335106`，Trusted Publisher `34734462191`。唯一 81 文件制品的 SHA-256 为 `7e4772a8335ed9560db2ed59a34b9154f3f1ddc1a60be9707443648d6a72e77f`；Release/Registry 字节一致，Registry 安装、签名和 SLSA provenance 已验证。详见 [发布检查表](10-release-checklist.md)。
+
 当前制品：`dsh-grok-provider@1.0.5`。账户 RPC 使用主机认证的共享 `/api/grok-auth/*` 路由，修复升级宿主后的状态、CLI 检测、模型目录和额度不可用。依赖对齐 DSH `0.1.5-rc.2`；旧版宿主需先升级。
 
 macOS 隔离宿主已验证状态、CLI `1.0.5`、两个模型和额度读取，以及 401/403 认证边界。真实生成和 Windows 真机浏览器登录未重测。版本说明见 [v1.0.5](releases/v1.0.5.md)，设计见 [ADR-0012](adr/0012-shared-api-auth-routes.md)。发布制品摘要和 Registry 回读记录由发布检查表保存。

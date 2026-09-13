@@ -147,6 +147,7 @@ Directory inclusion is not an endorsement by xAI or DeepSeek Harness. [Listing P
 
 ### `1.0.5` fix boundary
 
+- [Release 1.0.5](https://github.com/yoshino-xiao7/dsh-grok-provider/releases/tag/v1.0.5) and npm `latest` are available; dual-platform CI, exact artifact bytes, Registry signatures, and provenance have been verified.
 - Move six account operations to exact POST routes on shared `/api`; the host retains browser-session authentication, Host/Origin checks, and body limits.
 - Validate requests with the host schema, reject malformed or mismatched methods, and remove routes with the plugin.
 - Align dependencies with DSH `0.1.5-rc.2`. An isolated macOS instance verifies status, CLI `1.0.5`, both models, and quota; unauthenticated requests return 401 and foreign Origins return 403.

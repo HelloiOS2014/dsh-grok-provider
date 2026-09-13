@@ -2,6 +2,7 @@
 
 ## 1.0.5 - 2026-09-13
 
+- Published from `49f08ba62bd9eb77fbf122413e08f28fc56d7207` after dual-platform CI `34734335106` via Trusted Publisher `34734462191`. The unique 81-file, 280,675-byte artifact is byte-identical across local, GitHub Release and npm; `latest=1.0.5`, Registry installation, signatures and provenance verify. SHA-256: `7e4772a8335ed9560db2ed59a34b9154f3f1ddc1a60be9707443648d6a72e77f`.
 - Restore Grok account RPC after the DSH 0.1.5-rc.2 upgrade. Custom-channel registration failed with `cannot get property "webServer" without inject`, leaving the visible settings page unable to read account state or CLI versions.
 - Register six exact POST routes on the host-authenticated shared `/api` carrier and use namespaced Connection RPC methods from the browser. Retain host trust/authentication, request-schema validation, cancellation, and fiber-owned disposal.
 - Align Harness peers and locked development dependencies with 0.1.5-rc.2. Add real Connection registry and malformed-envelope regressions.

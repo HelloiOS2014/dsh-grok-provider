@@ -295,6 +295,19 @@ English summary: every release must close documentation, security, tests, determ
 - [x] 账户操作使用主机认证的共享 API 精确路由；测试覆盖 schema、路径/方法一致性、取消、路由清理和真实 Connection 注册。
 - [x] macOS 隔离 DSH 0.1.5-rc.2 只读检查恢复登录状态、CLI 1.0.5、grok-4.6/grok-4.5 与额度；无认证为 401、跨来源为 403。
 - [x] GitHub PR/双平台 CI、防强推/删除保护和私密漏洞报告已核对；npm environment 的 Secret 名称列表为空。
-- [ ] 最终双平台 CI、唯一 tarball 摘要、隔离制品安装、GitHub Release、Trusted Publisher、Registry 字节与 provenance 回读在发布完成后登记。
+- [x] 最终双平台 CI、唯一 tarball 摘要、隔离制品安装、GitHub Release、Trusted Publisher、Registry 字节与 provenance 已完成，记录见下。
 
 本次未重测真实模型生成或 Windows 真机浏览器登录，也未替换用户桌面的受管插件。
+
+## 1.0.5 发布完成（2026-09-13）
+
+- [x] 代码与发布 PR [#46](https://github.com/yoshino-xiao7/dsh-grok-provider/pull/46) 合并为 `49f08ba62bd9eb77fbf122413e08f28fc56d7207`；主分支 CI [34734335106](https://github.com/yoshino-xiao7/dsh-grok-provider/actions/runs/34734335106) 的 macOS 14 / Windows 2022 均成功。
+- [x] 最终提交的 Node 24.19.0 测试为 278 项、276 通过、0 失败、2 平台跳过；生产依赖审计为 0 漏洞。
+- [x] 从干净最终提交冻结唯一 `dsh-grok-provider-1.0.5.tgz`：81 文件，280,675 bytes packed、865,584 bytes unpacked；SHA-256 `7e4772a8335ed9560db2ed59a34b9154f3f1ddc1a60be9707443648d6a72e77f`；SRI `sha512-GPXfCgxJGJ+CGzSkTwTaSiXmhLYs8cgw7JOjwd9P7gHmTG3LZ2wqqMhKlfEtZw0Rc10foSVqwN8d8P2iK2RAKQ==`。
+- [x] 同一 tarball 安装到全新隔离 DSH 0.1.5-rc.2 profile，状态、CLI 版本 1.0.5、模型和额度均返回成功；无认证 401、跨来源 403。测试实例已关闭。
+- [x] Annotated tag `v1.0.5` 指向最终提交；[GitHub Release](https://github.com/yoshino-xiao7/dsh-grok-provider/releases/tag/v1.0.5) 只有这一份 tarball。Trusted Publisher [34734462191 attempt 1](https://github.com/yoshino-xiao7/dsh-grok-provider/actions/runs/34734462191/attempts/1) 成功。
+- [x] npm `latest=1.0.5`；本地、GitHub Release 和 Registry tarball 逐字节一致。Registry 精确版本安装、Host 导出和 client 字节验证通过。
+- [x] Registry metadata 含 1 个签名和 2 个 attestations；`npm audit signatures` 验证安装图中的 18 个签名包、3 个 attested 包。SLSA subject digest、repository、workflow、tag、commit 与发布 run 全部匹配。
+- [x] 受管目录仍固定历史已验收的 0.1.0 / darwin-arm64 条目；本次没有伪造 1.0.5 的受管桌面安装验收或修改该来源。
+
+本次发布未替换用户正在使用的桌面插件。Windows 真机浏览器登录和真实模型生成仍未重测。正式 tarball 保持不可变，本记录只更新仓库文档。
