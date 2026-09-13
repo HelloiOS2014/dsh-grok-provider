@@ -5,6 +5,7 @@ import packageJson from "../../package.json" with { type: "json" }
 
 import { attributionHeaders } from "@deepseek-ai/dsh-llm"
 import Schema from "@deepseek-ai/schemastery"
+import { clientRequestSchema } from "@deepseek-ai/dsh-client-connection"
 
 import {
   GROK_PRODUCTION_OIDC_AUTH_CONTRACT,
@@ -14,6 +15,7 @@ import {
 import { createAccountDashboard } from "../internal/account-dashboard.mjs"
 import { createAuthController } from "../internal/auth-controller.mjs"
 import { createAuthRpcHandler } from "../internal/auth-rpc.mjs"
+import { createAuthFetchRoutes } from "../internal/auth-fetch.mjs"
 import { createGrokAdapter } from "../internal/grok-adapter.mjs"
 import { createGrokCommandHandler } from "../internal/grok-command-handler.mjs"
 import { createGrokTransport } from "../internal/grok-transport.mjs"
@@ -157,11 +159,11 @@ export function apply(ctx, config) {
     recordInput: false,
     handler: commandHandler,
   }))
-  ctx.inject(["connection"], (connectionCtx) => connectionCtx.connection.rpc.handle(
-    "/grok-auth",
-    authRpcHandler,
-    { authority: "loopback" },
-  ))
+  ctx.inject(["connection"], (connectionCtx) => {
+    for (const route of createAuthFetchRoutes(authRpcHandler, clientRequestSchema)) {
+      connectionCtx.connection.fetch.register(route)
+    }
+  })
 
   ctx.effect(() => () => runtime.dispose(), "llm-grok runtime")
 }

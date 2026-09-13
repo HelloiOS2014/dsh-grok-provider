@@ -32,7 +32,7 @@ async function collectDistFiles(dir) {
   return files
 }
 
-test("the exact 1.0.4 source release exports runtime artifacts and Web loader metadata", async () => {
+test("the 1.0.4-based compatibility source exports runtime artifacts and Web loader metadata", async () => {
   const attributes = await fs.readFile(path.join(root, ".gitattributes"), "utf8")
   assert.match(attributes, /^\*\.yml text eol=lf$/mu)
   const manifest = JSON.parse(await fs.readFile(path.join(root, "package.json"), "utf8"))
@@ -84,16 +84,16 @@ test("the exact 1.0.4 source release exports runtime artifacts and Web loader me
   assert.equal(manifest.devDependencies["@deepseek-ai/dsh-credentials"], undefined)
   assert.equal(manifest.peerDependencies["@deepseek-ai/cordis"], "4.0.2")
   assert.equal(manifest.peerDependencies["@deepseek-ai/schemastery"], "3.18.2")
-  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-llm"], "0.1.2-rc.1")
-  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-settings"], "0.1.2-rc.1")
-  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-commands"], "0.1.2-rc.1")
-  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-subprocess"], "0.1.2-rc.1")
-  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-client-connection"], "0.1.2-rc.1")
-  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-client-locale"], "0.1.2-rc.1")
-  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-client-ui-settings"], "0.1.2-rc.1")
-  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-client-ui-renderer"], "0.1.2-rc.1")
+  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-llm"], "0.1.5-rc.2")
+  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-settings"], "0.1.5-rc.2")
+  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-commands"], "0.1.5-rc.2")
+  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-subprocess"], "0.1.5-rc.2")
+  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-client-connection"], "0.1.5-rc.2")
+  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-client-locale"], "0.1.5-rc.2")
+  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-client-ui-settings"], "0.1.5-rc.2")
+  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-client-ui-renderer"], "0.1.5-rc.2")
   assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-client-runtime"], undefined)
-  assert.equal(manifest.devDependencies["@deepseek-ai/dsh-settings"], "0.1.2-rc.1")
+  assert.equal(manifest.devDependencies["@deepseek-ai/dsh-settings"], "0.1.5-rc.2")
   assert.equal(manifest.peerDependenciesMeta?.["@deepseek-ai/dsh-settings"], undefined)
   assert.equal(manifest.peerDependenciesMeta?.["@deepseek-ai/dsh-client-ui-renderer"]?.optional, true)
   assert.deepEqual(manifest.dsh.client.inject, [
@@ -218,8 +218,6 @@ test("the exact 1.0.4 source release exports runtime artifacts and Web loader me
   const englishPreamble = markdownPreamble(englishReadme)
   const chineseQuickStart = markdownSection(chineseReadme, "## 快速开始")
   const englishQuickStart = markdownSection(englishReadme, "## Quick start")
-  const chineseReleaseSurface = `${chinesePreamble}\n${chineseQuickStart}`
-  const englishReleaseSurface = `${englishPreamble}\n${englishQuickStart}`
   assert.match(chineseReadme, /\[English\]\(README\.en\.md\)/u)
   assert.match(englishReadme, /\[简体中文\]\(README\.md\)/u)
   assert.match(chineseReadme, /## 快速开始/u)
@@ -232,7 +230,7 @@ test("the exact 1.0.4 source release exports runtime artifacts and Web loader me
     chinesePreamble,
     /本 README 随 `1\.0\.4` 一起进入 npm tarball，下面的精确安装命令也固定为 `1\.0\.4`。/u,
   )
-  assert.doesNotMatch(chineseReleaseSurface, /未发布|候选|继续安装/u)
+  assert.match(chinesePreamble, /当前分支包含 DSH `0\.1\.5-rc\.2` 的账户 RPC 兼容修复，尚未发布/u)
   assert.deepEqual(
     chineseQuickStart.match(/dsh plugin --profile web add dsh-grok-provider@[0-9]+\.[0-9]+\.[0-9]+/gu),
     ["dsh plugin --profile web add dsh-grok-provider@1.0.4"],
@@ -248,7 +246,7 @@ test("the exact 1.0.4 source release exports runtime artifacts and Web loader me
     englishPreamble,
     /This README is included in the `1\.0\.4` npm tarball, and the exact installation command below is pinned to `1\.0\.4`\./u,
   )
-  assert.doesNotMatch(englishReleaseSurface, /unpublished|candidate|continue installing/iu)
+  assert.match(englishPreamble, /Unreleased: this branch includes the account RPC compatibility fix for DSH `0\.1\.5-rc\.2`/u)
   assert.deepEqual(
     englishQuickStart.match(/dsh plugin --profile web add dsh-grok-provider@[0-9]+\.[0-9]+\.[0-9]+/gu),
     ["dsh plugin --profile web add dsh-grok-provider@1.0.4"],

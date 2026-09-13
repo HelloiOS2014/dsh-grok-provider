@@ -1,5 +1,7 @@
 # dsh-grok-provider
 
+> Unreleased: this branch includes the account RPC compatibility fix for DSH `0.1.5-rc.2`. The published `1.0.4` installation command below does not include it. See [ADR-0012](docs/adr/0012-shared-api-auth-routes.md).
+
 [简体中文](README.md) | [English](README.en.md)
 
 Use an already authenticated official Grok Build account from DeepSeek Harness, with dynamic model discovery, streaming reasoning, image input, optional Web/X Search, tool calls, and an account quota/model capability dashboard.

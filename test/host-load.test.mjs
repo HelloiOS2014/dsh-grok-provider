@@ -19,7 +19,7 @@ import { UnsupportedResponsesRequestError } from "../src/internal/responses-requ
 
 const hostApplySupported = process.platform === "darwin" || process.platform === "win32"
 
-test("the Host loads against dsh-settings 0.1.2-rc.1 without deleted named helpers", async () => {
+test("the Host loads against dsh-settings 0.1.5-rc.2 without deleted named helpers", async () => {
   const settings = await import("@deepseek-ai/dsh-settings")
   assert.equal(settings.installSettingsSection, undefined)
   assert.equal(settings.settingsNamespace, undefined)

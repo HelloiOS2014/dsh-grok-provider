@@ -1,5 +1,7 @@
 # dsh-grok-provider
 
+> 开发中：当前分支包含 DSH `0.1.5-rc.2` 的账户 RPC 兼容修复，尚未发布；下文 `1.0.4` 的 npm 安装命令不会包含此修复。详见 [ADR-0012](docs/adr/0012-shared-api-auth-routes.md)。
+
 [简体中文](README.md) | [English](README.en.md)
 
 让 DeepSeek Harness 使用你已登录的官方 Grok Build 账号：动态模型发现、流式推理、图片输入、可选 Web/X Search、工具调用，以及账号额度与模型能力面板。
