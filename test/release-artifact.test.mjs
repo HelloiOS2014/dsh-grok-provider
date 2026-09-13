@@ -32,15 +32,15 @@ async function collectDistFiles(dir) {
   return files
 }
 
-test("the 1.0.4-based compatibility source exports runtime artifacts and Web loader metadata", async () => {
+test("the exact 1.0.5 source release exports runtime artifacts and Web loader metadata", async () => {
   const attributes = await fs.readFile(path.join(root, ".gitattributes"), "utf8")
   assert.match(attributes, /^\*\.yml text eol=lf$/mu)
   const manifest = JSON.parse(await fs.readFile(path.join(root, "package.json"), "utf8"))
   assert.equal(manifest.name, "dsh-grok-provider")
-  assert.equal(manifest.version, "1.0.4")
+  assert.equal(manifest.version, "1.0.5")
   const lockfile = JSON.parse(await fs.readFile(path.join(root, "package-lock.json"), "utf8"))
-  assert.equal(lockfile.version, "1.0.4")
-  assert.equal(lockfile.packages[""].version, "1.0.4")
+  assert.equal(lockfile.version, "1.0.5")
+  assert.equal(lockfile.packages[""].version, "1.0.5")
   assert.deepEqual(manifest.repository, {
     type: "git",
     url: "git+https://github.com/yoshino-xiao7/dsh-grok-provider.git",
@@ -224,36 +224,36 @@ test("the 1.0.4-based compatibility source exports runtime artifacts and Web loa
   assert.match(chineseReadme, /## 安全与隐私/u)
   assert.match(
     chinesePreamble,
-    /本说明对应 `dsh-grok-provider@1\.0\.4` 制品；`0\.1\.8` 曾发布后撤回且版本号不可复用。/u,
+    /本说明对应 `dsh-grok-provider@1\.0\.5` 制品；`0\.1\.8` 曾发布后撤回且版本号不可复用。/u,
   )
   assert.match(
     chinesePreamble,
-    /本 README 随 `1\.0\.4` 一起进入 npm tarball，下面的精确安装命令也固定为 `1\.0\.4`。/u,
+    /本 README 随 `1\.0\.5` 一起进入 npm tarball，下面的精确安装命令也固定为 `1\.0\.5`。/u,
   )
-  assert.match(chinesePreamble, /当前分支包含 DSH `0\.1\.5-rc\.2` 的账户 RPC 兼容修复，尚未发布/u)
+  assert.doesNotMatch(`${chinesePreamble}\n${chineseQuickStart}`, /未发布|候选|继续安装/u)
   assert.deepEqual(
     chineseQuickStart.match(/dsh plugin --profile web add dsh-grok-provider@[0-9]+\.[0-9]+\.[0-9]+/gu),
-    ["dsh plugin --profile web add dsh-grok-provider@1.0.4"],
+    ["dsh plugin --profile web add dsh-grok-provider@1.0.5"],
   )
   assert.match(chineseReadme, /\[`THIRD_PARTY_NOTICES\.md`\]\(THIRD_PARTY_NOTICES\.md\)/u)
   assert.match(englishReadme, /## Quick start/u)
   assert.match(englishReadme, /## Security and privacy/u)
   assert.match(
     englishPreamble,
-    /This README describes the `dsh-grok-provider@1\.0\.4` artifact; version `0\.1\.8` was published and then withdrawn and cannot be reused\./u,
+    /This README describes the `dsh-grok-provider@1\.0\.5` artifact; version `0\.1\.8` was published and then withdrawn and cannot be reused\./u,
   )
   assert.match(
     englishPreamble,
-    /This README is included in the `1\.0\.4` npm tarball, and the exact installation command below is pinned to `1\.0\.4`\./u,
+    /This README is included in the `1\.0\.5` npm tarball, and the exact installation command below is pinned to `1\.0\.5`\./u,
   )
-  assert.match(englishPreamble, /Unreleased: this branch includes the account RPC compatibility fix for DSH `0\.1\.5-rc\.2`/u)
+  assert.doesNotMatch(`${englishPreamble}\n${englishQuickStart}`, /unpublished|candidate|continue installing/iu)
   assert.deepEqual(
     englishQuickStart.match(/dsh plugin --profile web add dsh-grok-provider@[0-9]+\.[0-9]+\.[0-9]+/gu),
-    ["dsh plugin --profile web add dsh-grok-provider@1.0.4"],
+    ["dsh plugin --profile web add dsh-grok-provider@1.0.5"],
   )
   assert.match(englishReadme, /\[`THIRD_PARTY_NOTICES\.md`\]\(THIRD_PARTY_NOTICES\.md\)/u)
   const securityPolicy = await fs.readFile(path.join(root, "SECURITY.md"), "utf8")
-  assert.match(securityPolicy, /本安全策略对应 `dsh-grok-provider@1\.0\.4` 制品/u)
+  assert.match(securityPolicy, /本安全策略对应 `dsh-grok-provider@1\.0\.5` 制品/u)
   assert.match(
     securityPolicy,
     /Release security note: the published `1\.0\.2` artifact changes visible reasoning projection and its aligned replay envelope/u,
@@ -373,4 +373,10 @@ test("the 1.0.4-based compatibility source exports runtime artifacts and Web loa
   ]) {
     await assert.rejects(fs.access(path.join(root, "dist/internal", filename)))
   }
+  const release105 = await fs.readFile(path.join(root, "docs/releases/v1.0.5.md"), "utf8")
+  assert.ok(release105.startsWith("## 中文\n"))
+  assert.match(release105, /## English/u)
+  assert.match(release105, /dsh-grok-provider@1\.0\.5/u)
+  assert.match(release105, /0\.1\.5-rc\.2/u)
+
 })

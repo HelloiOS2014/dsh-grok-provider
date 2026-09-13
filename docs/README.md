@@ -1,6 +1,14 @@
 # Grok Build Provider 文档索引
 
-- 状态：**`dsh-grok-provider@1.0.4` 正在修复 `0.1.2-rc.1` settings 注册；上一份已完成供应链回读的版本为 `1.0.3`**
+## 1.0.5 / DSH 0.1.5-rc.2
+
+当前制品：`dsh-grok-provider@1.0.5`。账户 RPC 使用主机认证的共享 `/api/grok-auth/*` 路由，修复升级宿主后的状态、CLI 检测、模型目录和额度不可用。依赖对齐 DSH `0.1.5-rc.2`；旧版宿主需先升级。
+
+macOS 隔离宿主已验证状态、CLI `1.0.5`、两个模型和额度读取，以及 401/403 认证边界。真实生成和 Windows 真机浏览器登录未重测。版本说明见 [v1.0.5](releases/v1.0.5.md)，设计见 [ADR-0012](adr/0012-shared-api-auth-routes.md)。发布制品摘要和 Registry 回读记录由发布检查表保存。
+
+## 历史记录
+
+- `1.0.4` 修复 `0.1.2-rc.1` settings 注册；该版已发布并完成供应链回读。
 - 制品范围：Host 改用 `ctx.settings.installSection` 注册 `llm-grok`，peer 对齐 Harness `0.1.2-rc.1`
 - 当前已完成发布回读版本：`1.0.3`
 - `1.0.3` 已发布基线：`yukiryou/main@07ebd35c56348a1b3296bd46d1a69f5b0f430241`

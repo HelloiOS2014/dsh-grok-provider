@@ -1,8 +1,16 @@
 # npm 发布计划与维护流程
 
+## 1.0.5 / DSH 0.1.5-rc.2
+
+当前制品：`dsh-grok-provider@1.0.5`。账户 RPC 使用主机认证的共享 `/api/grok-auth/*` 路由，修复升级宿主后的状态、CLI 检测、模型目录和额度不可用。依赖对齐 DSH `0.1.5-rc.2`；旧版宿主需先升级。
+
+macOS 隔离宿主已验证状态、CLI `1.0.5`、两个模型和额度读取，以及 401/403 认证边界。真实生成和 Windows 真机浏览器登录未重测。版本说明见 [v1.0.5](releases/v1.0.5.md)，设计见 [ADR-0012](adr/0012-shared-api-auth-routes.md)。发布制品摘要和 Registry 回读记录由发布检查表保存。
+
+## 历史记录
+
 ## 0. 当前状态
 
-`dsh-grok-provider@1.0.4` 正在修复 `1.0.3` 在 DeepSeek Harness `0.1.2-rc.1` 中因 named import 已删除的 `installSettingsSection` 而无法到达 ready 的问题。上一份已完成供应链回读的版本仍是 `1.0.3`。
+`dsh-grok-provider@1.0.4` 已修复 `1.0.3` 在 DeepSeek Harness `0.1.2-rc.1` 中因 named import 已删除的 `installSettingsSection` 而无法到达 ready 的问题。该版已完成供应链回读，见 [v1.0.4](releases/v1.0.4.md)。
 
 `dsh-grok-provider@1.0.3` 已正式发布并完成供应链回读：最终 release commit `07ebd35c56348a1b3296bd46d1a69f5b0f430241` 的 macOS 14 / Windows 2022 final CI run [`33378215345`](https://github.com/yoshino-xiao7/dsh-grok-provider/actions/runs/33378215345) 全绿，annotated tag object `7ec8a8a1086749e7ac1dfb0ef2bd50c821838363` peel 到该提交。仓库所有者明确授权的唯一 77 文件制品为 267,403 bytes packed、829,862 bytes unpacked；SHA-1 `6197c3d30ec1ef5f559371911d612f6236eee2f9`、SHA-256 `7f740c7258ab7eee0c96e1ddae3398b41a25e718cf267e244f8693c3c99aeb0d`、SRI `sha512-kJgN0NKKV7Te3oAgbPnEua/EQCLnj5S0KWAWrhP0ixudJBepplRFARYHCxwxOwbG87bnX07Mz/dxCoBiphWhqQ==`。Trusted Publisher run [`33379149158` attempt 1](https://github.com/yoshino-xiao7/dsh-grok-provider/actions/runs/33379149158/attempts/1) 已完成；npm `latest=1.0.3`，冻结制品、唯一 GitHub Release asset 与 Registry tarball 逐字节一致。Node `24.19.0` / npm `11.5.1` 锁定 Registry 安装通过 Host/client smoke，生产依赖审计为 0 漏洞；1 个 Registry signature、2 个 attestations、安装图 11 个 signed packages / 2 个 attested packages，以及精确绑定 `release.yml` / `refs/tags/v1.0.3` / release commit / publish run 的 SLSA provenance 均已验证。
 

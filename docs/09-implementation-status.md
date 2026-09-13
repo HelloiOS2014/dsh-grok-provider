@@ -1,5 +1,13 @@
 # 当前实现与发布状态
 
+## 1.0.5 / DSH 0.1.5-rc.2
+
+当前制品：`dsh-grok-provider@1.0.5`。账户 RPC 使用主机认证的共享 `/api/grok-auth/*` 路由，修复升级宿主后的状态、CLI 检测、模型目录和额度不可用。依赖对齐 DSH `0.1.5-rc.2`；旧版宿主需先升级。
+
+macOS 隔离宿主已验证状态、CLI `1.0.5`、两个模型和额度读取，以及 401/403 认证边界。真实生成和 Windows 真机浏览器登录未重测。版本说明见 [v1.0.5](releases/v1.0.5.md)，设计见 [ADR-0012](adr/0012-shared-api-auth-routes.md)。发布制品摘要和 Registry 回读记录由发布检查表保存。
+
+## 历史记录
+
 `1.0.2` 已正式发布并完成供应链回读。该制品修复严格空 reasoning lifecycle 被投影成多行无内容 `Think` 的显示问题，同时保留普通项既有校验与 Search-backed 复用项的精确 own-data/accessor 校验。
 
 状态日期：2026-08-30

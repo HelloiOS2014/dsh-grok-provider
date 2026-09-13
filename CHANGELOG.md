@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.5 - 2026-09-13
+
+- Restore Grok account RPC after the DSH 0.1.5-rc.2 upgrade. Custom-channel registration failed with `cannot get property "webServer" without inject`, leaving the visible settings page unable to read account state or CLI versions.
+- Register six exact POST routes on the host-authenticated shared `/api` carrier and use namespaced Connection RPC methods from the browser. Retain host trust/authentication, request-schema validation, cancellation, and fiber-owned disposal.
+- Align Harness peers and locked development dependencies with 0.1.5-rc.2. Add real Connection registry and malformed-envelope regressions.
+- macOS isolated-Harness checks recover status, official CLI 1.0.5, grok-4.6/grok-4.5 and quota. Unauthenticated requests return 401 and foreign Origins return 403. Physical Windows sign-in and live generation were not repeated.
+
 ## 1.0.4 - 2026-09-04
 
 - Stop named-importing the deleted `@deepseek-ai/dsh-settings` helpers `installSettingsSection` and `settingsNamespace`. Register the legal string constant `llm-grok` through `ctx.settings.installSection(...)` so the Host can load on DeepSeek Harness `0.1.2-rc.1`.

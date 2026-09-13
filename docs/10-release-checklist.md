@@ -286,3 +286,15 @@ English summary: every release must close documentation, security, tests, determ
 - [x] 仓库所有者看到完整精确 commit、制品、摘要与验证证据后明确授权发布 `dsh-grok-provider@1.0.2`；授权后没有重建或替换制品。
 - [x] Annotated tag object `b7efd3aabb99c73e1747d2d87890cdf9b284c438` peel 到 release commit；不可变 `v1.0.2`、唯一 GitHub Release asset 与 Trusted Publisher run [`33319150964` attempt 1](https://github.com/yoshino-xiao7/dsh-grok-provider/actions/runs/33319150964/attempts/1) 已完成。npm `latest=1.0.2`，冻结候选、Release 与 Registry tarball 逐字节一致；Node `24.19.0` / npm `11.5.1` 锁定 Registry 安装及 0 漏洞生产审计通过，本包 1 个 Registry signature、2 个 attestations，安装图 11 个 signed packages / 2 个 attested packages，以及精确绑定 `release.yml` / `refs/tags/v1.0.2` / release commit / publish run 的 SLSA provenance 均已回读。
 - [ ] 网络可达 Windows 真机浏览器弹出仍是独立未验收边界，不阻断本显示修复，但不得写成已验证。
+
+## 1.0.5 发布准备（2026-09-13）
+
+- [x] 仓库所有者明确要求发布本次 DSH 0.1.5-rc.2 兼容修复；版本冻结为稳定 1.0.5。
+- [x] 从已验证修复 09fc317 建立 `yukiryou/v1.0.5`，保留原工作区及未跟踪文件。
+- [x] manifest、lock、双语 README、CHANGELOG、SECURITY、文档首页/状态/上游证据和双语 release notes 同步。
+- [x] 账户操作使用主机认证的共享 API 精确路由；测试覆盖 schema、路径/方法一致性、取消、路由清理和真实 Connection 注册。
+- [x] macOS 隔离 DSH 0.1.5-rc.2 只读检查恢复登录状态、CLI 1.0.5、grok-4.6/grok-4.5 与额度；无认证为 401、跨来源为 403。
+- [x] GitHub PR/双平台 CI、防强推/删除保护和私密漏洞报告已核对；npm environment 的 Secret 名称列表为空。
+- [ ] 最终双平台 CI、唯一 tarball 摘要、隔离制品安装、GitHub Release、Trusted Publisher、Registry 字节与 provenance 回读在发布完成后登记。
+
+本次未重测真实模型生成或 Windows 真机浏览器登录，也未替换用户桌面的受管插件。

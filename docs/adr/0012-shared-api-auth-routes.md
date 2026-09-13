@@ -1,6 +1,6 @@
 # ADR-0012: Account routes on the shared Connection API
 
-- Status: Accepted for the unreleased DSH 0.1.5-rc.2 compatibility fix
+- Status: Accepted for dsh-grok-provider 1.0.5
 - Baseline: dsh-grok-provider 1.0.4, commit 693b564
 
 The desktop upgrade to Harness 0.1.5-rc.2 leaves the Grok settings page visible,
@@ -17,11 +17,9 @@ uses the host's clientRequestSchema and rejects a method/path mismatch before
 calling any account operation. Credential, login, logout, model and billing
 contracts are unchanged. Routes are removed with the plugin's fiber.
 
-This source targets Harness 0.1.5-rc.2. It is not a published replacement for the
-existing 1.0.4 npm artifact. Validation includes the real Connection registry,
-request correlation, malformed input, cancellation, route disposal and the
-existing host/client/protocol suite. A new release must assign a new version and
-complete the repository's existing release process.
+This release targets Harness 0.1.5-rc.2 and replaces the 1.0.4 integration.
+Validation includes the real Connection registry, request correlation,
+malformed input, cancellation, route disposal and the host/client/protocol suite.
 
 ## Local verification, 2026-09-13
 
