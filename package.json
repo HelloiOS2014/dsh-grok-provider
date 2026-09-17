@@ -58,7 +58,6 @@
     "test": "npm run build && npm run test:smoke-syntax && node --test spikes/protocol/test/*.test.mjs test/*.test.mjs",
     "test:smoke-syntax": "node --check spikes/image-input-smoke.mjs && node --check spikes/harness-attachment-smoke.mjs && node --check spikes/search-protocol-probe.mjs",
     "prepack": "npm run build",
-    "prepare": "node scripts/build.mjs",
     "pack:check": "npm pack --dry-run --json"
   },
   "peerDependencies": {
