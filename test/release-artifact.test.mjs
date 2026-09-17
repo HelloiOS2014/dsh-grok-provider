@@ -102,7 +102,9 @@ test("the exact 1.0.5 source release exports runtime artifacts and Web loader me
     "@deepseek-ai/dsh-client-ui-renderer",
     "@deepseek-ai/dsh-client-ui-settings",
   ])
-  assert.equal(manifest.scripts.prepack, "npm run build")
+  assert.equal(manifest.scripts.prepare, undefined)
+  assert.equal(manifest.scripts.prepack, undefined)
+  assert.equal(manifest.scripts.prepublish, undefined)
   assert.equal(manifest.scripts["pack:check"], "npm pack --dry-run --json")
   assert.equal(
     manifest.scripts["test:smoke-syntax"],
