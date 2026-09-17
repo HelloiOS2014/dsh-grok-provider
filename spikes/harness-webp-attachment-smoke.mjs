@@ -5,6 +5,7 @@ import path from "node:path"
 import { pathToFileURL } from "node:url"
 
 const RUNTIME_ENV = "DSH_HARNESS_ATTACHMENT_RUNTIME"
+const ADAPTER_ENV = "DSH_GROK_ADAPTER_PATH"
 const SOURCE_WIDTH = 128
 const SOURCE_HEIGHT = 64
 
@@ -24,13 +25,16 @@ async function main() {
   const runtimeRequire = createRequire(path.join(runtime, "package.json"))
   const repoRequire = createRequire(path.join(repository, "package.json"))
   const versions = await resolveVersions(runtimeRequire, repoRequire)
+  const adapterPath = process.env[ADAPTER_ENV] === undefined
+    ? path.join(repository, "src/internal/grok-adapter.mjs")
+    : path.resolve(process.env[ADAPTER_ENV])
 
   const [{ Context }, { LlmRuntime }, { LocalAttachmentStore }, { default: sharp }, { createGrokAdapter }] = await Promise.all([
     import(pathToFileURL(repoRequire.resolve("@deepseek-ai/cordis")).href),
     import(pathToFileURL(repoRequire.resolve("@deepseek-ai/dsh-llm")).href),
     import(pathToFileURL(runtimeRequire.resolve("@deepseek-ai/dsh-attachment-local")).href),
     import(pathToFileURL(runtimeRequire.resolve("sharp")).href),
-    import(pathToFileURL(path.join(repository, "src/internal/grok-adapter.mjs")).href),
+    import(pathToFileURL(adapterPath).href),
   ])
 
   const ctx = new Context()

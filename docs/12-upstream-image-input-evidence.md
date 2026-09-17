@@ -109,6 +109,7 @@ Node 24 协议测试使用内存 attachment store 和合成 jpeg/png 字节，�
 - [x] 不透明 WebP `input_image`：HTTP 200，同一断言命中。
 - [x] 手写 128×64 PNG（RGB / RGBA / 仅 pHYs）三种形状：HTTP 200，同一断言命中。
 - [x] 共 6 次 POST，0 次被 guard 拒绝；只输出模型 ID、状态、Content-Type、事件数、颜色词与错误正文片段，不输出 token、身份字段或原始事件。
+- [ ] 同一轮探测里 sharp 生成的 64×64 RGBA PNG 返回 HTTP 400 `invalid_image`（"Invalid PNG image."），而 128×64 的手写 PNG 通过；疑似最小尺寸或面积限制，未继续验证，不影响本节 WebP 结论。
 
 **Harness 隔离复验**（`spikes/harness-webp-attachment-smoke.mjs`，真实 `@deepseek-ai/dsh-attachment-local` `0.1.5-rc.2`、`@deepseek-ai/dsh-llm` `0.1.5-rc.2`，临时 `dshHome`，0 网络请求）：
 
