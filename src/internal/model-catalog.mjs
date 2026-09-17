@@ -1,3 +1,5 @@
+import { SUPPORTED_IMAGE_MEDIA_TYPES } from "./image-media-types.mjs"
+
 const MODEL_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/
 const MAX_CATALOG_BYTES = 256 * 1024
 const MAX_MODELS = 256
@@ -13,7 +15,7 @@ const IMAGE_INPUT_PROFILE = Object.freeze({
   maxDimension: 8192,
   maxImages: 8,
   maxTotalBytes: 8 * 1024 * 1024,
-  mediaTypes: Object.freeze(["image/jpeg", "image/png"]),
+  mediaTypes: SUPPORTED_IMAGE_MEDIA_TYPES,
 })
 
 export class InvalidModelCatalogError extends Error {

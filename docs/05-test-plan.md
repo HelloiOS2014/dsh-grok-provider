@@ -137,7 +137,7 @@
 - 无图 compiler 不查询 attachment store，完整 wire JSON 与 `0.1.3` encoder 一致；user 图片及一层 tool-result 图片保持 `text/image/text` 顺序。
 - 用真实故障形状锁定历史兼容：纯文本 user/system 与 `role:user` / `source.kind:subagent-settled` 的 `text/reasoning/text` 只保留可见文本，后续追加普通 user 图片时仍必须编译成功；普通 user 的同一消息内为 `text/reasoning/image/reasoning/text` 时也必须保持可见 text/image 顺序。私有 user reasoning 即使伪带同模型 replay metadata 也不进入 wire，有效 assistant replay 则仍恢复。省略前仍校验 reasoning text 的类型和长度；非字符串/超限负例在纯文本与含图路径均按通用非法 request 失败，含图路径 attachment store lookup 为 0。
 - attachment fake 覆盖同一 AbortSignal、请求内相同 attachment ID 只读一次、相同 ID 元数据冲突、缺 store、`ATTACHMENT_PROJECTION_UNSUPPORTED`、存储故障及 I/O 完成前 Responses POST 调用数为 0。
-- jpeg/png 正确 MIME/魔数与 jpeg/png 交叉伪造；webp/gif；`bytes === data.byteLength`；`uchar`/sRGB/hasAlpha；4 MiB、16,777,216 pixels、8192 最大边的边界值。
+- jpeg/png/webp 正确 MIME/魔数与三者交叉伪造；gif；`bytes === data.byteLength`；`uchar`/sRGB/hasAlpha；4 MiB、16,777,216 pixels、8192 最大边的边界值。
 - 图片数 8/9、派生图总字节 8 MiB、含图路径全请求 content blocks 20,000、完整 JSON 16 MiB；跨普通消息/一层 tool-result 均按全局 oldest-first 淘汰，淘汰项不读取 attachment。另锁定 20,001 个纯文本 block 仍走 `0.1.3` fast path。
 - 更深 tool-result、assistant/system 图片与未知 block 在 attachment I/O 或 Responses POST 前失败；源图片 policy 错误为 `UNSUPPORTED_CONTENT`，store 返回损坏投影、图片淘汰后仍超限及通用 stop/schema/request 错误保持 `INVALID_RESPONSE`。tool-result 的 reasoning 与图片同行时仍锁定为通用非法 request，不能漂移成图片 capability 错误。
 - 本地 fake/codec 测试与 CLI Chat Proxy 脱敏图片 spike 是两类独立证据；精确 `grok-4.6` 必须分别通过普通 user 与一层 tool-result 的红/蓝语义门禁，请求图片固定为 `detail:"high"`。`grok-4.5` 的受控红图语义不可靠，必须失败关闭为 text-only；真实 Harness attachment smoke 还必须独立复验仅 `grok-4.6` 保留图片、`grok-4.5`/未知模型 text-only 且网络请求为 0。

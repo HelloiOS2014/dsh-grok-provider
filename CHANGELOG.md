@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Accept `image/webp` attachment references and request-image projections. The Harness attachment store re-encodes any image it cannot keep byte-identical, and its alpha rung is WebP, so an alpha image carrying a colour profile (a macOS screenshot in Display P3, for example) reached the provider as WebP and failed the whole turn with `UNSUPPORTED_CONTENT` before any request was sent, permanently for that session. Reported upstream as [#48](https://github.com/yoshino-xiao7/dsh-grok-provider/issues/48).
+- Forward the WebP projection as WebP instead of transcoding it. The fixed Grok Build CLI chat proxy answered `grok-4.6` over HTTP 200 for alpha and opaque WebP `input_image` data URLs in a redacted real-account probe; xAI's public image documentation still lists only jpg/jpeg and png. Evidence: [docs/12](./docs/12-upstream-image-input-evidence.md) section 7.
+
 ## 1.0.5 - 2026-09-13
 
 - Published from `49f08ba62bd9eb77fbf122413e08f28fc56d7207` after dual-platform CI `34734335106` via Trusted Publisher `34734462191`. The unique 81-file, 280,675-byte artifact is byte-identical across local, GitHub Release and npm; `latest=1.0.5`, Registry installation, signatures and provenance verify. SHA-256: `7e4772a8335ed9560db2ed59a34b9154f3f1ddc1a60be9707443648d6a72e77f`.

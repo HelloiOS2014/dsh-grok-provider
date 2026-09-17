@@ -47,7 +47,7 @@ Node 24 协议测试使用内存 attachment store 和合成 jpeg/png 字节，�
 - 缺 store 时以 `UNSUPPORTED_CONTENT` 失败且 Responses POST 调用为 0；
 - 已中止请求在查询 store 前终止，attachment I/O 期间的自定义取消 reason 最终映射为 `ABORTED`；
 - 同一 attachment ID 请求内只读取一次；第 9 张图在读取前淘汰最旧项，投影字节超过 8 MiB 后也按全局顺序淘汰最旧项；
-- webp 源引用在 attachment lookup 前拒绝；store 返回魔数、字节数、尺寸、像素、色深、色彩空间或 alpha 元数据不自洽的投影按内部契约故障拒绝；
+- gif 源引用在 attachment lookup 前拒绝；webp 源引用自社区补丁起接受（见第 7 节）；store 返回魔数、字节数、尺寸、像素、色深、色彩空间或 alpha 元数据不自洽的投影按内部契约故障拒绝；
 - 含图路径超过 20,000 个 content block 时在读取前拒绝，同时 20,001 个纯文本 block 保持 `0.1.3` fast path 行为；
 - 完整 JSON 超过 16 MiB 时确定性淘汰最旧图片；
 - 最终离线 smoke 已验证 attachment 编译与 `LlmRuntime` 隔离链路：仅精确 `grok-4.6` 保留图片，`grok-4.5` 与未知模型均投影为 text-only。
@@ -98,3 +98,22 @@ Node 24 协议测试使用内存 attachment store 和合成 jpeg/png 字节，�
 已发布 `0.1.7` 只增加 Windows 运行时诊断、登录失败可解释性与 `IconThinkOutline16` 设置导航图标维护。曾发布后撤回的 sidebar quota `0.1.8` 同样不修改图片边界；该 npm 版本号已消耗且不承载 Search。已发布 `0.1.9` 独立增加默认关闭的 Web/X Search 协议与页面，已发布 `0.1.10` 修复其 settings 集成，已发布 `0.1.11` 只修复 Search 续跑 reasoning lifecycle；三者都不修改上述图片模型集合、attachment 投影、资源上限或图片 wire。
 
 `0.1.11` 的发布基线为 release commit `2e5c6dbc8bb83377a4db4d8e31452b3ce96500c5`；final CI run `33303080849` 与 Trusted Publisher run `33303631312` 均通过。唯一 tarball 含 71 个文件，为 207,022 bytes packed、656,139 bytes unpacked，SHA-256 为 `8fca0eca86769ee9febd35606cc8c944a0ae968cec2937a30ccaf68d36d42b2d`，SRI 为 `sha512-2qInRIq5Dkf7CqXq8z1mVvMelStg3nZ1wuWEqsExgfm7iXF0Jn5f7d11IAtHRxdKdJm/j0s8tYT1Dx6IdtGNqg==`。npm `latest=0.1.11`，Registry、Release 与本地制品逐字节一致；本包 1 个 Registry signature、2 个 package attestations 以及精确绑定 `release.yml`、`v0.1.11`、release commit 与发布 run 的 SLSA provenance 已验证。这些供应链事实不扩大图片能力，也不把只观察到 summary/Search 的真实 probe 描述为 raw reasoning 真机证据；raw reasoning 仍只有协议 fixture，网络可达 Windows 真机浏览器弹出也仍未验收。
+
+## 7. 2026-09-17 WebP 源引用与投影（社区补丁）
+
+**现象与原因**：Harness attachment store 只在能原样保留时保留原格式，否则按 alpha 重新编码（alpha → WebP，不透明 → JPEG，没有 PNG 分支）。带 ICC/EXIF、非 sRGB、16bit 或超限的源图必然走这条路径，因此带透明通道的 macOS 截图（Display P3）以 `image/webp` 进入会话。`1.0.5` 只接受 jpeg/png，`validateImageRef()` 在读取 attachment 之前就抛 `UnsupportedImageInputError`，整轮以 `UNSUPPORTED_CONTENT` 失败且 Responses POST 为 0；引用留在历史里，该会话后续每轮都会失败。
+
+**脱敏真机探测**（固定 `https://cli-chat-proxy.grok.com`，`GET /v1/models` 与 `POST /v1/responses` 之外的请求被 guard 拒绝，`store:false`，合成纯蓝图，`detail:"high"`）：
+
+- [x] alpha WebP `input_image`：HTTP 200、`text/event-stream`、唯一 completed finish，颜色词断言命中。
+- [x] 不透明 WebP `input_image`：HTTP 200，同一断言命中。
+- [x] 手写 128×64 PNG（RGB / RGBA / 仅 pHYs）三种形状：HTTP 200，同一断言命中。
+- [x] 共 6 次 POST，0 次被 guard 拒绝；只输出模型 ID、状态、Content-Type、事件数、颜色词与错误正文片段，不输出 token、身份字段或原始事件。
+
+**Harness 隔离复验**（`spikes/harness-webp-attachment-smoke.mjs`，真实 `@deepseek-ai/dsh-attachment-local` `0.1.5-rc.2`、`@deepseek-ai/dsh-llm` `0.1.5-rc.2`，临时 `dshHome`，0 网络请求）：
+
+- [x] alpha + Display P3 的 128×64 PNG 经 `saveImage()` 存为 `image/webp`，`readImageRequest()` 返回同一个 `image/webp`、`hasAlpha:true` 投影。
+- [x] 真实 `LlmRuntime` 下精确 `grok-4.6` 编译出 `data:image/webp;base64,...` 的 `input_image`；`grok-4.5` 仍投影为 text-only 占位。
+- [x] 同一脚本在未打补丁的 `1.0.5` 源码上以 `runtime-modality-projection-mismatch` 失败，打补丁后通过。
+
+**实现**：媒体类型白名单集中到 `src/internal/image-media-types.mjs`（jpeg/png/webp），`model-catalog` 的 `IMAGE_INPUT_PROFILE.mediaTypes` 与 request compiler 的 ref/projection 校验共用它，`hasExpectedMagic()` 增加 RIFF/WEBP 魔数。引用按 WebP 原样转发，不做转码——xAI 公开文档仍只列 jpg/jpeg 与 png，但固定 CLI Chat Proxy 已实测接受 WebP。

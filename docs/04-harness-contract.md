@@ -130,9 +130,9 @@ finish
 - AbortSignal 贯穿 fetch、reader、codec 和 adapter iterator。
 - `0.1.0`–`0.1.3` 对外声明 `inputModalities:["text"]`，Harness 会把图片历史投影为确定性文本占位；若 raw image 仍到达旧 Adapter，则在 Responses POST 前拒绝。
 - `0.1.4` 只对经过公开模型证据与固定 Proxy 语义验证的精确 `grok-4.6` 声明 `inputModalities:["text","image"]`，并由异步 request compiler 通过可选 `ctx.get("attachments")` 读取图片。`grok-4.5` 与未知模型继续 text-only，不能从 Responses backend 推导 modality。
-- 无图请求不查询 attachment service，继续使用 `0.1.3` 同步 encoder；有图请求支持普通 user 内容和一层 tool-result content，按原顺序生成 `input_text`/`input_image`，并固定使用 `detail:"high"`。更深 tool-result、assistant/system 图片、webp/gif、无 projection 或超限均在 attachment I/O 或 Responses POST 前尽早拒绝。
+- 无图请求不查询 attachment service，继续使用 `0.1.3` 同步 encoder；有图请求支持普通 user 内容和一层 tool-result content，按原顺序生成 `input_text`/`input_image`，并固定使用 `detail:"high"`。更深 tool-result、assistant/system 图片、gif、无 projection 或超限均在 attachment I/O 或 Responses POST 前尽早拒绝。
 - Provider-neutral 历史允许非 assistant 消息携带 `reasoning` block（例如 `subagent-settled` 上下文）。Grok wire 只重放同模型 assistant 的有效加密 reasoning；普通 user/system 历史中的 schema-valid reasoning 必须像 Harness 其他官方 adapter 一样省略，同时保留相邻可见文本，不得把私有 reasoning 改写成 user text，也不得因此阻断同消息或后续消息中的图片请求。被省略的块仍须通过字符串与长度校验，畸形/超限输入在 attachment I/O 前按通用非法 request 拒绝。一层 tool-result 的公开内容边界仍只接受 text/image，不借此放宽；其中出现 reasoning/未知 block 仍按通用非法 request 拒绝，不能因同行有图片改报为模型图片能力不足。
-- request compiler 完成全部读取、jpeg/png 元数据与魔数检查、oldest-first 淘汰和 16 MiB 最终 JSON 检查后，Adapter 才调用推理 transport。源图片 policy 失败映射 `UNSUPPORTED_CONTENT`；损坏投影、图片淘汰后仍不合法的请求与其他通用非法 request 映射 `INVALID_RESPONSE`。完整策略见 [ADR-0008](./adr/0008-image-input-request-compiler.md)。
+- request compiler 完成全部读取、jpeg/png/webp 元数据与魔数检查、oldest-first 淘汰和 16 MiB 最终 JSON 检查后，Adapter 才调用推理 transport。源图片 policy 失败映射 `UNSUPPORTED_CONTENT`；损坏投影、图片淘汰后仍不合法的请求与其他通用非法 request 映射 `INVALID_RESPONSE`。完整策略见 [ADR-0008](./adr/0008-image-input-request-compiler.md)。
 - Harness `0.1.1-rc.2` 隔离门禁已加载真实 `attachment-local` 与 `LlmRuntime`：内容寻址引用生成有界 PNG request projection，仅 `grok-4.6` 保留内联 `input_image`，`grok-4.5` 与未知 `grok-future` 均投影为 text-only，并使用 0 网络请求的本地受控 transport。
 - 认证缺失或被拒使用 Harness 已识别的 LLM code `AUTH`，不用自造 `AUTH_REQUIRED`。
 

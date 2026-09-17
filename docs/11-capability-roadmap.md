@@ -55,7 +55,7 @@ const request = await requestCompiler.compile(options, preparedRoute)
 - Host 只惰性提供 `() => ctx.get("attachments")`；attachment 不是必需 inject，无图请求不查询服务。
 - compiler 内部完成普通 user 与一层 tool-result 的有界图片发现、`readImageRequest`、data URL、旧图淘汰和 16 MiB 最终检查；transport 不理解这些细节。
 - 普通 user 内容按顺序映射为 `input_text` / `input_image`；一层 tool-result 含图时映射为 `function_call_output.output` 内容数组。纯文本消息和纯文本 tool-result 保持原字符串形状。
-- assistant/system 图片、更深 tool-result、webp/gif、无 projection 或超限内容都在 attachment I/O 或 Responses POST 前失败关闭。
+- assistant/system 图片、更深 tool-result、gif、无 projection 或超限内容都在 attachment I/O 或 Responses POST 前失败关闭。
 
 ### 模型能力
 

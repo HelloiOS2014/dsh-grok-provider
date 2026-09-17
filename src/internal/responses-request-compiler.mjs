@@ -1,5 +1,6 @@
 import { offloadRequestImagesWithPolicy, offloadedImageText } from "@deepseek-ai/dsh-llm"
 
+import { SUPPORTED_IMAGE_MEDIA_TYPES, isSupportedImageMediaType } from "./image-media-types.mjs"
 import {
   ResponsesRequestTooLargeError,
   UnsupportedResponsesRequestError,
@@ -12,7 +13,7 @@ const MAX_CONTENT_BLOCKS = 20_000
 const FUNCTION_NAME_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/
 const SEARCH_MODEL_ID = "grok-4.6"
 const CAPTURE_IMAGE_POLICY = Object.freeze({
-  mediaTypes: Object.freeze(["image/jpeg", "image/png"]),
+  mediaTypes: SUPPORTED_IMAGE_MEDIA_TYPES,
 })
 const EMPTY_SERVER_TOOLS = Object.freeze([])
 const DEFAULT_SEARCH_POLICY = Object.freeze({
@@ -592,7 +593,7 @@ function parseImagePolicy(route) {
     !isPositiveSafeInteger(policy.maxTotalBytes) ||
     !Array.isArray(policy.mediaTypes) ||
     policy.mediaTypes.length === 0 ||
-    !policy.mediaTypes.every((mediaType) => mediaType === "image/jpeg" || mediaType === "image/png")
+    !policy.mediaTypes.every(isSupportedImageMediaType)
   ) {
     throw new UnsupportedImageInputError()
   }
@@ -768,6 +769,11 @@ function sameOriginalDimensions(left, right) {
 function hasExpectedMagic(data, mediaType) {
   if (mediaType === "image/jpeg") {
     return data.length >= 3 && data[0] === 0xff && data[1] === 0xd8 && data[2] === 0xff
+  }
+  if (mediaType === "image/webp") {
+    return data.length >= 12 &&
+      data[0] === 0x52 && data[1] === 0x49 && data[2] === 0x46 && data[3] === 0x46 &&
+      data[8] === 0x57 && data[9] === 0x45 && data[10] === 0x42 && data[11] === 0x50
   }
   return data.length >= 8 &&
     data[0] === 0x89 && data[1] === 0x50 && data[2] === 0x4e && data[3] === 0x47 &&

@@ -1571,13 +1571,117 @@ test("unsupported source MIME fails before resolving attachment storage", async 
     provider: "grok",
     model: "grok-4.6",
     messages: [{
-      id: "user-webp",
+      id: "user-gif",
       role: "user",
       source: { kind: "user" },
-      content: [{ type: "image", attachment: imageRef({ mediaType: "image/webp" }) }],
+      content: [{ type: "image", attachment: imageRef({ mediaType: "image/gif" }) }],
     }],
   }, imageRoute()), UnsupportedImageInputError)
   assert.equal(lookups, 0)
+})
+
+test("a WebP source reference compiles to a WebP input image", async () => {
+  const data = Buffer.from(
+    "UklGRnwAAABXRUJQVlA4WAoAAAAQAAAAPwAAPwAAQUxQSBAAAAABB1D9iAgACeH/ey2i/6kfVlA4IEYAAADwAwCdASpAAEAAPjEYi0QiIaERBAAgAwS0gDsAfgAAEDdTUAV4hbkAAP79Xc///8LM/hZn8LM/+Fmf//CrcMQydAAAAAAA",
+    "base64",
+  )
+  assert.equal(data.subarray(0, 4).toString("ascii"), "RIFF")
+  assert.equal(data.subarray(8, 12).toString("ascii"), "WEBP")
+  const attachment = imageRef({
+    mediaType: "image/webp",
+    bytes: data.byteLength,
+    width: 64,
+    height: 64,
+  })
+  let reads = 0
+  const compiler = createResponsesRequestCompiler({
+    getAttachmentStore: () => ({
+      async readImageRequest(ref) {
+        reads += 1
+        return {
+          variantId: `fixture:${ref.attachmentId}`,
+          attachment: ref,
+          data,
+          mediaType: "image/webp",
+          bytes: data.byteLength,
+          width: 64,
+          height: 64,
+          depth: "uchar",
+          space: "srgb",
+          hasAlpha: true,
+        }
+      },
+    }),
+  })
+
+  const request = await compileRequest(compiler, {
+    provider: "grok",
+    model: "grok-4.6",
+    messages: [{
+      id: "user-webp",
+      role: "user",
+      source: { kind: "user" },
+      content: [
+        { type: "text", text: "Before" },
+        { type: "image", attachment },
+      ],
+    }],
+  }, imageRoute())
+
+  assert.equal(reads, 1)
+  assert.deepEqual(request.input, [{
+    role: "user",
+    content: [
+      { type: "input_text", text: "Before" },
+      {
+        type: "input_image",
+        image_url: `data:image/webp;base64,${data.toString("base64")}`,
+        detail: "high",
+      },
+    ],
+  }])
+})
+
+test("a WebP projection must carry WebP bytes", async () => {
+  const png = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+    "base64",
+  )
+  const attachment = imageRef({
+    mediaType: "image/webp",
+    bytes: png.byteLength,
+    width: 1,
+    height: 1,
+  })
+  const compiler = createResponsesRequestCompiler({
+    getAttachmentStore: () => ({
+      async readImageRequest(ref) {
+        return {
+          variantId: `fixture:${ref.attachmentId}`,
+          attachment: ref,
+          data: png,
+          mediaType: "image/webp",
+          bytes: png.byteLength,
+          width: 1,
+          height: 1,
+          depth: "uchar",
+          space: "srgb",
+          hasAlpha: true,
+        }
+      },
+    }),
+  })
+
+  await assert.rejects(compileRequest(compiler, {
+    provider: "grok",
+    model: "grok-4.6",
+    messages: [{
+      id: "user-webp-mismatch",
+      role: "user",
+      source: { kind: "user" },
+      content: [{ type: "image", attachment }],
+    }],
+  }, imageRoute()), InvalidRequestImageProjectionError)
 })
 
 test("validated request image bytes are isolated from later store mutation", async () => {
@@ -1826,7 +1930,7 @@ function imageRoute() {
       maxDimension: 8192,
       maxImages: 8,
       maxTotalBytes: 8 * 1024 * 1024,
-      mediaTypes: ["image/jpeg", "image/png"],
+      mediaTypes: ["image/jpeg", "image/png", "image/webp"],
     },
     serverTools: ["web_search", "x_search"],
   }

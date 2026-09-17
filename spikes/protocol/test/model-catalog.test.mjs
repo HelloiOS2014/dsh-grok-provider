@@ -94,7 +94,7 @@ test("only the exact verified Grok model receives private image and Search route
     maxDimension: 8192,
     maxImages: 8,
     maxTotalBytes: 8 * 1024 * 1024,
-    mediaTypes: ["image/jpeg", "image/png"],
+    mediaTypes: ["image/jpeg", "image/png", "image/webp"],
   })
   assert.equal(catalog[1].imageInput, undefined)
   assert.equal(catalog[2].imageInput, undefined)
