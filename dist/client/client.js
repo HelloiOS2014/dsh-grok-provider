@@ -86,6 +86,21 @@ window.__ModuleLoader__.load({
       return Object.freeze({ webSearch: webSearch.value, xSearch: xSearch.value })
     }
 
+    function searchSettingsFromForm(form) {
+      return {
+        getSnapshot() {
+          const snapshot = form.getSnapshot()
+          if (snapshot.status !== "ready") return snapshot
+          const value = decodeSearchConfig(snapshot.value)
+          return value === undefined
+            ? { ...snapshot, status: "unavailable", value: undefined, writable: false }
+            : { ...snapshot, value }
+        },
+        subscribe: (listener) => form.subscribe(listener),
+        set: (field, value) => form.set(field, value),
+      }
+    }
+
     const navIconMarker = "data-dsh-grok-provider-nav-icon"
     const navIconStyleSelector = 'style[data-plugin-nav-icon="dsh-grok-provider"]'
     const navIconStateKey = Symbol.for("dsh-grok-provider.settings-nav-icon.v1")
@@ -527,12 +542,12 @@ window.__ModuleLoader__.load({
       return new Intl.NumberFormat().format(value)
     }
 
-    const inject = ["slots", "locale", "connection", "settingsScope"]
+    const inject = ["slots", "locale", "connection", "configForms"]
     function apply(ctx) {
       ctx.effect(() => ctx.locale.register(namespace, dictionaries), "dsh-grok: dictionaries")
       ctx.effect(() => installSettingsNavIcon(), "dsh-grok: settings nav icon")
       const t = ctx.locale.bind(namespace)
-      const searchSettings = ctx.settingsScope.bind({ namespace: "llm-grok", decode: decodeSearchConfig })
+      const searchSettings = searchSettingsFromForm(ctx.configForms.get("llm-grok"))
       ctx.slots.inject("settings.section", () => ctx.slots.register({
         name: "settings.section", id: "grok-auth", order: 45, label: () => t("nav"), locale: namespace,
         inject: () => ({ connection: ctx.connection, t, searchSettings }),

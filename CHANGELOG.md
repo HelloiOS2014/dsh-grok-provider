@@ -1,7 +1,9 @@
 # Changelog
 
-## Unreleased
+## Unreleased (1.0.6)
 
+- Adapt the Web settings page to DSH `0.1.7-rc.1` `configForms`; expose the two Search fields as volatile Host config, keep invalid values disabled, and use the new settings presentation API. Align exact peers and the development lockfile with this DSH release.
+- Replace the removed DSH image-offload helper with a local bounded oldest-image projection. The request compiler retains count, byte, and final JSON size limits.
 - Accept `image/webp` attachment references and request-image projections. The Harness attachment store re-encodes any image it cannot keep byte-identical, and its alpha rung is WebP, so an alpha image carrying a colour profile (a macOS screenshot in Display P3, for example) reached the provider as WebP and failed the whole turn with `UNSUPPORTED_CONTENT` before any request was sent, permanently for that session. Reported upstream as [#48](https://github.com/yoshino-xiao7/dsh-grok-provider/issues/48).
 - Forward the WebP projection as WebP instead of transcoding it. The fixed Grok Build CLI chat proxy answered `grok-4.6` over HTTP 200 for alpha and opaque WebP `input_image` data URLs in a redacted real-account probe; xAI's public image documentation still lists only jpg/jpeg and png. Evidence: [docs/12](./docs/12-upstream-image-input-evidence.md) section 7.
 - Ship `dist/` in git and drop install-time lifecycle scripts (`prepare`/`prepack`). GitHub installs no longer need `allowBuilds`, so later updates do not require a new yaml key.

@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto"
 import packageJson from "../../package.json" with { type: "json" }
 
 import { attributionHeaders } from "@deepseek-ai/dsh-llm"
+import { isVolatile } from "@deepseek-ai/cosmokit"
 import Schema from "@deepseek-ai/schemastery"
 import { clientRequestSchema } from "@deepseek-ai/dsh-client-connection"
 
@@ -29,11 +30,10 @@ import { createRuntimeDiagnostics } from "../internal/runtime-diagnostics.mjs"
 
 export const name = "llm-grok"
 export const inject = ["llm"]
-const SETTINGS_NAMESPACE = "llm-grok"
 
 export const Config = Schema.object({
-  webSearch: Schema.boolean().default(false).description("Allow xAI Web Search for regular Grok requests"),
-  xSearch: Schema.boolean().default(false).description("Allow xAI X Search for regular Grok requests"),
+  webSearch: Schema.boolean().default(false).description("Allow xAI Web Search for regular Grok requests").volatile(),
+  xSearch: Schema.boolean().default(false).description("Allow xAI X Search for regular Grok requests").volatile(),
 })
 
 export function apply(ctx, config) {
@@ -42,7 +42,7 @@ export function apply(ctx, config) {
     throw new TypeError("dsh-grok-provider supports macOS and Windows")
   }
 
-  let currentConfig = () => config
+  const currentConfig = () => config
 
   const homeDir = os.homedir()
   let refreshOfficialCredential
@@ -67,7 +67,7 @@ export function apply(ctx, config) {
       fetch: globalThis.fetch,
       attributionHeaders,
       clientIdentifier: "dsh-grok-provider",
-      clientVersion: "1.0.5",
+      clientVersion: packageJson.version,
     }),
     createAdapter: ({ getGeneration }) => createGrokAdapter({
       getGeneration,
@@ -75,20 +75,15 @@ export function apply(ctx, config) {
       getSearchPolicy: () => {
         const current = currentConfig()
         return {
-          webSearch: current.webSearch,
-          xSearch: current.xSearch,
+          webSearch: isVolatile(current.webSearch) ? current.webSearch.get() : current.webSearch,
+          xSearch: isVolatile(current.xSearch) ? current.xSearch.get() : current.xSearch,
         }
       },
       mapError: mapLlmError,
     }),
   })
   ctx.inject(["settings"], (settingsCtx) => {
-    settingsCtx.settings.installSection(ctx, SETTINGS_NAMESPACE, Config, config, {
-      setSource(source) {
-        currentConfig = source
-      },
-      onChange() {},
-    })
+    settingsCtx.effect(() => settingsCtx.settings.configure({ auto: false }, ctx.fiber))
   })
   const authController = createAuthController({
     registry: runtime.auth,

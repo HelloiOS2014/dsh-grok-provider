@@ -6,6 +6,8 @@ Use an already authenticated official Grok Build account from DeepSeek Harness, 
 
 > Unofficial community project; not affiliated with xAI or DeepSeek Harness. This README describes the `dsh-grok-provider@1.0.5` artifact; version `0.1.8` was published and then withdrawn and cannot be reused.
 
+The current `1.0.6` checkout is adapted to DSH `0.1.7-rc.1` but has not been published as a new npm release. The `1.0.5` install command and compatibility table below apply only to the published DSH `0.1.5-rc.2` build.
+
 `1.0.5` repairs unavailable account services and unknown CLI versions after upgrading to DeepSeek Harness `0.1.5-rc.2`. Six account operations now use the host-authenticated shared `/api/grok-auth/*` routes, restoring status, CLI diagnostics, model discovery, and quota reads.
 
 This README is included in the `1.0.5` npm tarball, and the exact installation command below is pinned to `1.0.5`. The previous version with completed supply-chain readback is `1.0.4`.

@@ -32,7 +32,7 @@ test("the browser bundle registers one localized loopback-only Grok settings sec
   assert.match(source, /使用额度/u)
   assert.match(source, /当前账号可用的模型/u)
   assert.match(source, /call\("dashboard"\)/u)
-  assert.match(source, /settingsScope\.bind\(\{ namespace: "llm-grok", decode:/u)
+  assert.match(source, /configForms\.get\("llm-grok"\)/u)
   assert.doesNotMatch(source, /localStorage/u)
   assert.doesNotMatch(source, /userId|user_id|subscriptionTier|prepaidBalance/u)
   vm.runInNewContext(source, {
@@ -56,7 +56,7 @@ test("the browser bundle registers one localized loopback-only Grok settings sec
     assert.equal(id, "react")
     return React
   })
-  assert.deepEqual(Array.from(plugin.inject), ["slots", "locale", "connection", "settingsScope"])
+  assert.deepEqual(Array.from(plugin.inject), ["slots", "locale", "connection", "configForms"])
 
   const registrations = []
   const dictionaries = []
@@ -75,7 +75,7 @@ test("the browser bundle registers one localized loopback-only Grok settings sec
       },
       register(options, component) { registrations.push({ options, component }) },
     },
-    settingsScope: searchHarness.service,
+    configForms: searchHarness.service,
   }
   plugin.apply(ctx)
 
@@ -86,12 +86,22 @@ test("the browser bundle registers one localized loopback-only Grok settings sec
   assert.equal(registrations[0].options.name, "settings.section")
   assert.equal(registrations[0].options.id, "grok-auth")
   assert.equal(typeof registrations[0].component, "function")
-  assert.equal(searchHarness.binding.namespace, "llm-grok")
-  const decoded = searchHarness.binding.decode({ webSearch: true, xSearch: false, futureSetting: true })
+  assert.equal(searchHarness.binding, "llm-grok")
+  const searchSettings = registrations[0].options.inject().searchSettings
+  searchHarness.publish({
+    status: "ready", writable: true,
+    value: { webSearch: true, xSearch: false, futureSetting: true },
+  })
+  const decoded = searchSettings.getSnapshot().value
   assert.deepEqual({ ...decoded }, { webSearch: true, xSearch: false })
   assert.equal(Object.isFrozen(decoded), true)
-  assert.equal(searchHarness.binding.decode({ webSearch: true, xSearch: "false" }), undefined)
-  assert.equal(registrations[0].options.inject().searchSettings, searchHarness.scope)
+  searchHarness.publish({
+    status: "ready", writable: true,
+    value: { webSearch: true, xSearch: "false" },
+  })
+  assert.deepEqual({ ...searchSettings.getSnapshot() }, {
+    status: "unavailable", writable: false, value: undefined,
+  })
 })
 
 test("the browser bundle replaces only the Grok settings nav gear and cleans up on unload", async () => {
@@ -209,7 +219,7 @@ test("the browser bundle replaces only the Grok settings nav gear and cleans up 
         inject(_name, callback) { callback() },
         register() { return () => {} },
       },
-      settingsScope: searchHarness.service,
+      configForms: searchHarness.service,
     })
     return effects
   }
@@ -403,7 +413,7 @@ test("the model grid renders an image badge only for image-capable models", asyn
       inject(_name, callback) { callback() },
       register(_options, component) { registrations.push(component) },
     },
-    settingsScope: searchHarness.service,
+    configForms: searchHarness.service,
   })
 
   const tree = registrations[0]({
@@ -1000,7 +1010,7 @@ async function renderSettingsPage({
       inject(_name, callback) { callback() },
       register(_options, component) { registrations.push(component) },
     },
-    settingsScope: searchHarness.service,
+    configForms: searchHarness.service,
   })
   const render = () => {
     hookIndex = 0
@@ -1139,7 +1149,7 @@ async function createSettingsLifecycleHarness({ rpc, searchHarness = createSearc
       inject(_name, callback) { callback() },
       register(_options, component) { registrations.push(component) },
     },
-    settingsScope: searchHarness.service,
+    configForms: searchHarness.service,
   })
 
   const render = () => {
@@ -1229,8 +1239,8 @@ function createSearchSettingsHarness({
     publish,
     scope,
     service: {
-      bind(options) {
-        binding = options
+      get(entryId) {
+        binding = entryId
         return scope
       },
     },

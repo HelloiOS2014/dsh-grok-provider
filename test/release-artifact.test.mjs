@@ -32,15 +32,15 @@ async function collectDistFiles(dir) {
   return files
 }
 
-test("the exact 1.0.5 source release exports runtime artifacts and Web loader metadata", async () => {
+test("the 1.0.6 source package exports runtime artifacts and Web loader metadata", async () => {
   const attributes = await fs.readFile(path.join(root, ".gitattributes"), "utf8")
   assert.match(attributes, /^\*\.yml text eol=lf$/mu)
   const manifest = JSON.parse(await fs.readFile(path.join(root, "package.json"), "utf8"))
   assert.equal(manifest.name, "dsh-grok-provider")
-  assert.equal(manifest.version, "1.0.5")
+  assert.equal(manifest.version, "1.0.6")
   const lockfile = JSON.parse(await fs.readFile(path.join(root, "package-lock.json"), "utf8"))
-  assert.equal(lockfile.version, "1.0.5")
-  assert.equal(lockfile.packages[""].version, "1.0.5")
+  assert.equal(lockfile.version, "1.0.6")
+  assert.equal(lockfile.packages[""].version, "1.0.6")
   assert.deepEqual(manifest.repository, {
     type: "git",
     url: "git+https://github.com/yoshino-xiao7/dsh-grok-provider.git",
@@ -82,18 +82,18 @@ test("the exact 1.0.5 source release exports runtime artifacts and Web loader me
   assert.equal(manifest.dependencies, undefined)
   assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-credentials"], undefined)
   assert.equal(manifest.devDependencies["@deepseek-ai/dsh-credentials"], undefined)
-  assert.equal(manifest.peerDependencies["@deepseek-ai/cordis"], "4.0.2")
-  assert.equal(manifest.peerDependencies["@deepseek-ai/schemastery"], "3.18.2")
-  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-llm"], "0.1.5-rc.2")
-  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-settings"], "0.1.5-rc.2")
-  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-commands"], "0.1.5-rc.2")
-  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-subprocess"], "0.1.5-rc.2")
-  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-client-connection"], "0.1.5-rc.2")
-  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-client-locale"], "0.1.5-rc.2")
-  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-client-ui-settings"], "0.1.5-rc.2")
-  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-client-ui-renderer"], "0.1.5-rc.2")
+  assert.equal(manifest.peerDependencies["@deepseek-ai/cordis"], "4.0.4")
+  assert.equal(manifest.peerDependencies["@deepseek-ai/schemastery"], "3.18.4")
+  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-llm"], "0.1.7-rc.1")
+  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-settings"], "0.1.7-rc.1")
+  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-commands"], "0.1.7-rc.1")
+  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-subprocess"], "0.1.7-rc.1")
+  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-client-connection"], "0.1.7-rc.1")
+  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-client-locale"], "0.1.7-rc.1")
+  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-client-ui-settings"], "0.1.7-rc.1")
+  assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-client-ui-renderer"], "0.1.7-rc.1")
   assert.equal(manifest.peerDependencies["@deepseek-ai/dsh-client-runtime"], undefined)
-  assert.equal(manifest.devDependencies["@deepseek-ai/dsh-settings"], "0.1.5-rc.2")
+  assert.equal(manifest.devDependencies["@deepseek-ai/dsh-settings"], "0.1.7-rc.1")
   assert.equal(manifest.peerDependenciesMeta?.["@deepseek-ai/dsh-settings"], undefined)
   assert.equal(manifest.peerDependenciesMeta?.["@deepseek-ai/dsh-client-ui-renderer"]?.optional, true)
   assert.deepEqual(manifest.dsh.client.inject, [
@@ -353,8 +353,8 @@ test("the exact 1.0.5 source release exports runtime artifacts and Web loader me
     )
   }
   assert.match(host, /export const name = "llm-grok"/u)
-  assert.match(host, /const SETTINGS_NAMESPACE = "llm-grok"/u)
-  assert.match(host, /settings\.installSection\(/u)
+  assert.match(host, /settings\.configure\(\{ auto: false \}, ctx\.fiber\)/u)
+  assert.doesNotMatch(host, /settings\.installSection\(/u)
   assert.doesNotMatch(host, /installSettingsSection|settingsNamespace/u)
   assert.match(host, /packageJson from "\.\.\/\.\.\/package\.json" with \{ type: "json" \}/u)
   assert.match(host, /pluginVersion: packageJson\.version/u)

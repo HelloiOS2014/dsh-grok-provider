@@ -1,4 +1,4 @@
-import { offloadRequestImagesWithPolicy, offloadedImageText } from "@deepseek-ai/dsh-llm"
+import { offloadedImageText } from "@deepseek-ai/dsh-llm"
 
 import { SUPPORTED_IMAGE_MEDIA_TYPES, isSupportedImageMediaType } from "./image-media-types.mjs"
 import {
@@ -142,10 +142,8 @@ async function compileImageRequest({
   signal?.throwIfAborted()
   const policy = parseImagePolicy(route)
   for (const ref of capturedRefs.values()) validateImageRef(ref, policy)
-  let messages = offloadRequestImagesWithPolicy(capturedMessages, {
-    representation: "raw",
+  let messages = offloadImages(capturedMessages, {
     maxImages: policy.maxImages,
-    placeholder: offloadedImageText,
   })
   const blocks = collectImageBlocks(messages)
   const refs = indexUniqueImageRefs(blocks, policy)
@@ -167,11 +165,9 @@ async function compileImageRequest({
     block.attachment,
     versionsById.get(String(block.attachment.attachmentId)),
   ]))
-  messages = offloadRequestImagesWithPolicy(messages, {
-    representation: "raw",
+  messages = offloadImages(messages, {
     maxBytes: policy.maxTotalBytes,
     byteLength: (ref) => versionsById.get(String(ref.attachmentId)).bytes,
-    placeholder: offloadedImageText,
   })
 
   while (true) {
@@ -181,10 +177,8 @@ async function compileImageRequest({
       if (!(error instanceof ResponsesRequestTooLargeError)) throw error
       const imageCount = collectImageBlocks(messages).length
       if (imageCount === 0) throw error
-      messages = offloadRequestImagesWithPolicy(messages, {
-        representation: "raw",
+      messages = offloadImages(messages, {
         maxImages: imageCount - 1,
-        placeholder: offloadedImageText,
       })
     }
   }
@@ -611,6 +605,43 @@ function collectImageBlocks(messages) {
     }
   }
   return blocks
+}
+
+// DSH 0.1.7 no longer exports its route-owned image offloader. Keep Grok's
+// request projection local so the older images are omitted before wire encoding.
+function offloadImages(messages, { maxImages, maxBytes, byteLength = (ref) => ref.bytes }) {
+  const images = collectImageBlocks(messages)
+  let count = maxImages === undefined ? 0 : Math.max(0, images.length - maxImages)
+  if (maxBytes !== undefined) {
+    const lengths = images.map((block) => byteLength(block.attachment))
+    let total = lengths.slice(count).reduce((sum, length) => sum + length, 0)
+    while (total > maxBytes && count < images.length) {
+      total -= lengths[count]
+      count += 1
+    }
+  }
+  if (count === 0) return messages
+  const remaining = { count }
+  const replace = (blocks) => {
+    let changed = false
+    const result = blocks.map((block) => {
+      if (block.type === "image" && remaining.count > 0) {
+        remaining.count -= 1
+        changed = true
+        return { type: "text", text: offloadedImageText(block.attachment) }
+      }
+      if (block.type !== "tool-result") return block
+      const content = replace(block.content)
+      if (content === block.content) return block
+      changed = true
+      return { ...block, content }
+    })
+    return changed ? result : blocks
+  }
+  return messages.map((message) => {
+    const content = replace(message.content)
+    return content === message.content ? message : { ...message, content }
+  })
 }
 
 function indexUniqueImageRefs(blocks, policy) {

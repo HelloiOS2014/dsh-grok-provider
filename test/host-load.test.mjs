@@ -4,9 +4,9 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import test from "node:test"
 
-import { Context } from "@deepseek-ai/cordis"
+import { Context, Service } from "@deepseek-ai/cordis"
+import { isVolatile, updateVolatile } from "@deepseek-ai/cosmokit"
 import LlmRuntime, { LlmError } from "@deepseek-ai/dsh-llm"
-import SettingsProvider from "@deepseek-ai/dsh-settings"
 
 import * as grokPlugin from "../src/host/index.mjs"
 import { mapLlmError } from "../src/internal/llm-error.mjs"
@@ -19,11 +19,12 @@ import { UnsupportedResponsesRequestError } from "../src/internal/responses-requ
 
 const hostApplySupported = process.platform === "darwin" || process.platform === "win32"
 
-test("the Host loads against dsh-settings 0.1.5-rc.2 without deleted named helpers", async () => {
+test("the Host loads against the DSH 0.1.7-rc.1 settings API", async () => {
   const settings = await import("@deepseek-ai/dsh-settings")
   assert.equal(settings.installSettingsSection, undefined)
   assert.equal(settings.settingsNamespace, undefined)
-  assert.equal(typeof settings.default.prototype.installSection, "function")
+  assert.equal(typeof settings.default.prototype.configure, "function")
+  assert.equal(typeof settings.default.prototype.describe, "function")
   assert.equal(grokPlugin.name, "llm-grok")
   assert.equal(typeof grokPlugin.apply, "function")
 })
@@ -44,36 +45,35 @@ test("the Host plugin registers and cleanly removes the Grok provider in the rea
   await llmFiber.dispose()
 })
 
-test("the Host exposes one live llm-grok settings namespace with safe defaults", {
+test("the Host owns its settings presentation without a duplicate generated page", {
   skip: hostApplySupported ? false : "Host apply is macOS/Windows only",
 }, async () => {
   const ctx = new Context()
-  const settingsFiber = ctx.plugin(MemorySettingsProvider)
+  const settingsFiber = ctx.plugin(RecordingSettings)
   await settingsFiber
   const llmFiber = ctx.plugin(LlmRuntime)
   await llmFiber
   const grokFiber = ctx.plugin(grokPlugin)
   await grokFiber
 
-  assert.deepEqual(ctx.settings.describe().map(({ ns, value, applies }) => ({
-    ns,
-    value,
-    applies,
-  })), [{
-    ns: "llm-grok",
-    value: { webSearch: false, xSearch: false },
-    applies: "live",
-  }])
+  assert.deepEqual(ctx.settings.presentations, [{ auto: false }])
 
   await grokFiber.dispose()
-  assert.deepEqual(ctx.settings.describe(), [])
+  assert.deepEqual(ctx.settings.presentations, [])
   await llmFiber.dispose()
   await settingsFiber.dispose()
 })
 
 test("the Host exposes opt-in Search policy without a selectable authentication mode", () => {
-  assert.deepEqual(grokPlugin.Config({}), { webSearch: false, xSearch: false })
-  assert.deepEqual(grokPlugin.Config({ webSearch: true, xSearch: false }), {
+  const defaults = grokPlugin.Config({})
+  assert.equal(isVolatile(defaults.webSearch), true)
+  assert.equal(isVolatile(defaults.xSearch), true)
+  assert.deepEqual({ webSearch: defaults.webSearch.get(), xSearch: defaults.xSearch.get() }, {
+    webSearch: false,
+    xSearch: false,
+  })
+  const enabled = grokPlugin.Config({ webSearch: true, xSearch: false })
+  assert.deepEqual({ webSearch: enabled.webSearch.get(), xSearch: enabled.xSearch.get() }, {
     webSearch: true,
     xSearch: false,
   })
@@ -82,7 +82,7 @@ test("the Host exposes opt-in Search policy without a selectable authentication 
   assert.deepEqual(Object.keys(grokPlugin).sort(), ["Config", "apply", "inject", "name"])
 })
 
-test("the Host applies Search settings to later calls while prepared calls keep their snapshot", {
+test("the Host reads live Search settings while prepared calls keep their snapshot", {
   skip: hostApplySupported ? false : "Host apply is macOS/Windows only",
 }, async () => {
   const originalFetch = globalThis.fetch
@@ -92,7 +92,6 @@ test("the Host applies Search settings to later calls while prepared calls keep 
   const authDir = join(fixtureHome, ".grok")
   let grokFiber
   let llmFiber
-  let settingsFiber
   const capturedRequests = []
 
   try {
@@ -138,25 +137,17 @@ test("the Host applies Search settings to later calls while prepared calls keep 
 
     for await (const _chunk of ctx.llm.stream(requestOptions("composition-fallback"))) {}
 
-    settingsFiber = ctx.plugin(MemorySettingsProvider)
-    await settingsFiber
-    assert.deepEqual(ctx.settings.get("llm-grok"), { webSearch: true, xSearch: false })
-
     const prepared = await ctx.llm.prepareCall({ provider: "grok", model: "grok-4.6" })
-    await ctx.settings.update("llm-grok", { webSearch: false, xSearch: true })
-
+    const updated = grokPlugin.Config({ xSearch: true })
+    updateVolatile(grokFiber.config.webSearch, updated.webSearch)
+    updateVolatile(grokFiber.config.xSearch, updated.xSearch)
     for await (const _chunk of prepared.stream(requestOptions("prepared-before-update"))) {}
     for await (const _chunk of ctx.llm.stream(requestOptions("created-after-update"))) {}
-
-    await settingsFiber.dispose()
-    settingsFiber = undefined
-    for await (const _chunk of ctx.llm.stream(requestOptions("after-settings-dispose"))) {}
 
     assert.deepEqual(capturedRequests.map((request) => request.tools), [
       [{ type: "web_search" }],
       [{ type: "web_search" }],
       [{ type: "x_search" }],
-      [{ type: "web_search" }],
     ])
   } finally {
     globalThis.fetch = originalFetch
@@ -168,28 +159,24 @@ test("the Host applies Search settings to later calls while prepared calls keep 
       await grokFiber?.dispose()
     } finally {
       try {
-        await settingsFiber?.dispose()
+        await llmFiber?.dispose()
       } finally {
-        try {
-          await llmFiber?.dispose()
-        } finally {
-          await rm(fixtureHome, { recursive: true, force: true })
-        }
+        await rm(fixtureHome, { recursive: true, force: true })
       }
     }
   }
 })
 
-class MemorySettingsProvider extends SettingsProvider {
-  writable = true
-  document = {}
+class RecordingSettings extends Service {
+  presentations = []
 
-  async load() {
-    return structuredClone(this.document)
+  constructor(ctx) {
+    super(ctx, "settings")
   }
 
-  async persist(ns, section) {
-    this.document[ns] = structuredClone(section)
+  configure(presentation) {
+    this.presentations.push(presentation)
+    return () => { this.presentations = this.presentations.filter((item) => item !== presentation) }
   }
 }
 
